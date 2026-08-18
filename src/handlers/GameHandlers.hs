@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
-module PlayerHandlers where
+module GameHandlers where
 
 import Servant
 import Data.Text (Text)
@@ -14,42 +14,42 @@ import Hasql.Connection (Connection)
 import qualified Hasql.Pool as P
 import Hasql.Pool (Pool)
 import Hasql.Session (QueryError)
-import PlayerDTO
-import Player
+import GameDTO
+import Games
 
 
-getProfileHandler :: Pool -> Int64 -> Handler PlayerDTO
-getProfileHandler pool userId =  do
-    res <- liftIO $ Player.findPlayer pool userId
+getGameHandler :: Pool -> Int64 -> Handler GameDTO
+getGameHandler pool userId =  do
+    res <- liftIO $ Games.findGame pool userId
     case res of
         Left _ -> throwError err500
         Right [] -> throwError err404
-        Right as -> return $ Player.toPlayerDTO $ head as
+        Right as -> return $ Games.toGameDTO $ head as
 
-getProfilesHandler :: Pool -> Handler [PlayerDTO]
-getProfilesHandler pool = do
-    res <- liftIO $ Player.findPlayers pool
+getGamesHandler :: Pool -> Handler [GameDTO]
+getGamesHandler pool = do
+    res <- liftIO $ Games.findGames pool
     case res of
         Left _ -> throwError err500
         Right [] -> throwError err404
-        Right as -> return $ map Player.toPlayerDTO as
+        Right as -> return $ map Games.toGameDTO as
 
-createProfileHandler :: Pool -> PlayerDTO -> Handler NoContent
-createProfileHandler p pl = do
-        res <- liftIO $ Player.insertPlayer pl p
+createGameHandler :: Pool -> GameDTO -> Handler NoContent
+createGameHandler p pl = do
+        res <- liftIO $ Games.insertGame pl p
         case res of
             Left _ -> throwError err500
             Right [] -> throwError err403
             Right _ -> return NoContent
 
-deleteProfileHandler :: Pool -> Int64 -> Handler NoContent
-deleteProfileHandler _ userId =
+deleteGameHandler :: Pool -> Int64 -> Handler NoContent
+deleteGameHandler _ userId =
     if userId == 0
         then throwError err404
         else pure NoContent
 
-updateProfileHandler :: Pool -> Int64 -> PlayerDTO -> Handler NoContent
-updateProfileHandler _ userId _ =
+updateGameHandler :: Pool -> Int64 -> GameDTO -> Handler NoContent
+updateGameHandler _ userId _ =
     if userId == 0
         then throwError err404
         else pure NoContent  

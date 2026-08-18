@@ -32,21 +32,21 @@ import Hasql.Session (QueryError, Session, run)
 import qualified Hasql.Pool as P
 import Hasql.Pool (Pool)
 
-import PlayerDTO
-import PlayerHandlers
+import GameDTO
+import GameHandlers
 
-type API = "api" S.:> "wanaka" S.:> "player" S.:> S.Capture "id" Int64 S.:> S.Get '[S.JSON] PlayerDTO
-    S.:<|> "api" S.:> "wanaka" S.:> "player" S.:> S.Get '[S.JSON] [PlayerDTO]
-    S.:<|> "api" S.:> "wanaka" S.:> "player" S.:> S.ReqBody '[S.JSON] PlayerDTO S.:> S.Post '[S.JSON] S.NoContent
-    S.:<|> "api" S.:> "wanaka" S.:> "player" S.:> S.Capture "id" Int64 S.:> S.Delete '[S.JSON] S.NoContent
-    S.:<|> "api" S.:> "wanaka" S.:> "player" S.:> S.Capture "id" Int64 S.:> S.ReqBody '[S.JSON] PlayerDTO S.:> S.Put '[S.JSON] S.NoContent
+type API = "api" S.:> "wanaka" S.:> "game" S.:> S.Capture "id" Int64 S.:> S.Get '[S.JSON] GameDTO
+    S.:<|> "api" S.:> "wanaka" S.:> "game" S.:> S.Get '[S.JSON] [GameDTO]
+    S.:<|> "api" S.:> "wanaka" S.:> "game" S.:> S.ReqBody '[S.JSON] GameDTO S.:> S.Post '[S.JSON] S.NoContent
+    S.:<|> "api" S.:> "wanaka" S.:> "game" S.:> S.Capture "id" Int64 S.:> S.Delete '[S.JSON] S.NoContent
+    S.:<|> "api" S.:> "wanaka" S.:> "game" S.:> S.Capture "id" Int64 S.:> S.ReqBody '[S.JSON] GameDTO S.:> S.Put '[S.JSON] S.NoContent
 
 server :: Pool -> S.Server API
-server pool = getProfileHandler pool
-        S.:<|> getProfilesHandler pool
-        S.:<|> createProfileHandler pool
-        S.:<|> deleteProfileHandler pool
-        S.:<|> updateProfileHandler pool
+server pool = getGameHandler pool
+        S.:<|> getGamesHandler pool
+        S.:<|> createGameHandler pool
+        S.:<|> deleteGameHandler pool
+        S.:<|> updateGameHandler pool
 
 api :: S.Proxy API
 api = S.Proxy

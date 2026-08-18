@@ -15,7 +15,7 @@ import Hasql.Connection
 import Hasql.Pool as P
 import Servant
 
-import PlayerDTO
+import GameDTO
 
 data DbConfig = DbConfig
     { dbName     :: String

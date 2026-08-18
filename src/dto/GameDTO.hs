@@ -3,58 +3,45 @@
 {-# LANGUAGE RecordWildCards       #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 
-module Game_.DTO where
+module GameDTO where
 
 import Data.Aeson
-import Data.Text (Text)
+import Data.Aeson.Types (Parser)
 import Data.Int (Int32, Int64)
+import Data.Text (Text, pack, unpack)
 
--- Player
 
-data PlayerDTO = PlayerDTO
-    { mobile :: Text
-    , email :: Text
-    , firstName :: Text
-    , lastName :: Text
-    , block :: Int64
-    , defence :: Int64
-    , spike :: Int64
-    , serve :: Int64
-    , skills :: Int64
-    , position :: Text
-    , team :: Text
+-- Game
+
+data GameDTO = GameDTO
+    { court :: Text
+    , local :: Text
+    , visit :: Text
+    , setLocal :: Int64
+    , setVisit :: Int64
+    , date :: Maybe Int64
     , id :: Maybe Int64
     } deriving (Eq, Show)
     
 
-instance ToJSON PlayerDTO where
-    toJSON PlayerDTO {..} = object [
-            "mobile" .= mobile,
-            "email" .= email,
-            "firstname" .= firstName,
-            "lastname" .= lastName,
-            "block" .= block,
-            "defence" .= defence,
-            "spike" .= spike,
-            "serve" .= serve,
-            "skills" .= skills,
-            "position" .= position,
-            "team" .= team,
+instance ToJSON GameDTO where
+    toJSON GameDTO {..} = object [
+            "court" .= court,
+            "local" .= local,
+            "visit" .= visit,
+            "setlocal" .= setLocal,
+            "setvisit" .= setVisit,
+            "date" .= date,
             "id" .= id
         ]
 
-instance FromJSON PlayerDTO where
-    parseJSON (Object v) = PlayerDTO <$> 
-        v .: "mobile" <*>
-        v .: "email" <*>
-        v .: "firstname" <*>
-        v .: "lastname" <*>
-        v .: "block" <*>
-        v .: "defence" <*>
-        v .: "spike" <*>
-        v .: "serve" <*>
-        v .: "skills" <*>
-        v .: "position" <*>
-        v .: "team" <*>
+instance FromJSON GameDTO where
+    parseJSON (Object v) = GameDTO <$> 
+        v .: "court" <*>
+        v .: "local" <*>
+        v .: "visit" <*>
+        v .: "setlocal" <*>
+        v .: "setvisit" <*>
+        v .:? "date" <*>
         v .:? "id"
-    parseJSON _ = fail "ProfileDTO expects an object"
+    parseJSON _ = fail "GameDTO expects an object"

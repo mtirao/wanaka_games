@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -17,15 +17,17 @@ build-type:     Simple
 extra-source-files:
     README.md
 
-executable profiles
+executable games
   main-is: Main.hs
   other-modules:
       Server
       ErrorMessage
+      GameDTO
       PlayerDTO
       Views
-      PlayerHandlers
-      Player
+      GameHandlers
+      Games
+      Players
       Paths_games
   hs-source-dirs:
       src
