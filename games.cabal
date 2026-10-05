@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.38.1.
+-- This file has been generated from package.yaml by hpack version 0.39.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -26,6 +26,7 @@ executable games
       PlayerDTO
       Views
       GameHandlers
+      PlayerHandlers
       Games
       Players
       Paths_games
@@ -59,6 +60,7 @@ executable games
     , lens-aeson
     , postgresql-simple
     , rel8
+    , rel8-internal
     , resource-pool
     , servant
     , servant-server

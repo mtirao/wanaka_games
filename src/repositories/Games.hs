@@ -14,12 +14,10 @@ import Control.Monad.IO.Class
 import Data.Int (Int32, Int64)
 import Data.Text (Text, unpack, pack)
 import qualified Data.Text.Lazy as TL
---import qualified Data.Text.Internal as TI
 import Data.Time (LocalTime)
 import GHC.Generics (Generic)
-import Hasql.Connection (Connection, ConnectionError, acquire, release, settings)
-import Hasql.Session (QueryError, run, statement)
-import Hasql.Statement (Statement (..))
+import Hasql.Connection (Connection, ConnectionError, acquire, release)
+import qualified Hasql.Session as Session
 import qualified Hasql.Pool as P
 import Hasql.Pool (Pool)
 import Rel8
@@ -43,7 +41,6 @@ deriving stock instance f ~ Rel8.Result => Show (Game f)
 gameSchema :: TableSchema (Game Name)
 gameSchema = TableSchema
     { name = "games"
-    , schema = Nothing
     , columns = Game
         { court = "court"
         , local = "local"
@@ -60,7 +57,7 @@ findGames :: Pool -> IO (Either P.UsageError [Game Result])
 findGames pool = do
     let query = select $ do
                     each gameSchema
-    P.use pool (statement () query)
+    P.use pool (Session.statement () (run query))
 
 findGame :: Pool -> Int64 -> IO (Either P.UsageError [Game Result])
 findGame pool gameId = do
@@ -68,19 +65,19 @@ findGame pool gameId = do
                                             p <- each gameSchema
                                             where_ (p.gameId ==. lit gameId)
                                             return p
-                            P.use pool (statement () query)
+                            P.use pool (Session.statement () (run query))
 
 
 -- INSERT
 insertGame :: GameDTO -> Pool -> IO (Either P.UsageError [Int64])
 insertGame p pool = do
-                            P.use pool (statement () (insert1 p))
+    P.use pool (Session.statement () (run (insert1 p)))
 
-insert1 :: GameDTO -> Statement () [Int64]
+insert1 :: GameDTO -> Statement (Query (Expr Int64))
 insert1 p = insert $ Insert
             { into = gameSchema
             , rows = values [ Game (lit p.court) (lit p.local) (lit p.visit) (lit p.setLocal) (lit p.setVisit) (lit $ fromMaybe 0 p.date) (nextval "game_id_seq") ]
-            , returning = Projection (.gameId)
+            , returning = Returning (.gameId)
             , onConflict = Abort
             }
 

@@ -58,6 +58,7 @@ dependencies:
 - hasql
 - hasql-pool
 - rel8
+- rel8-internal
 executables:
   games:
     main: Main.hs

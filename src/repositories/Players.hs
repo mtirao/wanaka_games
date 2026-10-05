@@ -17,9 +17,8 @@ import qualified Data.Text.Lazy as TL
 --import qualified Data.Text.Internal as TI
 import Data.Time (LocalTime)
 import GHC.Generics (Generic)
-import Hasql.Connection (Connection, ConnectionError, acquire, release, settings)
-import Hasql.Session (QueryError, run, statement)
-import Hasql.Statement (Statement (..))
+import Hasql.Connection (Connection, ConnectionError, acquire, release)
+import qualified Hasql.Session as Session
 import qualified Hasql.Pool as P
 import Hasql.Pool (Pool)
 import Rel8
@@ -38,7 +37,6 @@ deriving stock instance f ~ Rel8.Result => Show (Player f)
 playerSchema :: TableSchema (Player Name)
 playerSchema = TableSchema
     { name = "players"
-    , schema = Nothing
     , columns = Player
         { gameId = "game_id"
         , playerId = "player_id"
@@ -48,29 +46,28 @@ playerSchema = TableSchema
 
 findPlayers :: Pool -> IO (Either P.UsageError [Player Result])
 findPlayers pool = do
-    let query = select $ do
-                    each playerSchema
-    P.use pool (statement () query)
+    let query = select $ each playerSchema
+    P.use pool (Session.statement () (run query))
 
 findPlayer :: Pool -> Int64 -> IO (Either P.UsageError [Player Result])
-findPlayer pool playerId = do
-                            let query = select $ do
-                                            p <- each playerSchema
-                                            where_ (p.playerId ==. lit playerId)
-                                            return p
-                            P.use pool (statement () query)
+findPlayer pool gameId = do
+    let query = select $ do
+            p <- each playerSchema
+            where_ (p.gameId ==. lit gameId)
+            return p
+    P.use pool (Session.statement () (run query))
 
 
 -- INSERT
 insertPlayer :: PlayerDTO -> Pool -> IO (Either P.UsageError [Int64])
 insertPlayer p pool = do
-                            P.use pool (statement () (insert1 p))
+    P.use pool (Session.statement () (run (insert1 p)))
 
-insert1 :: PlayerDTO -> Statement () [Int64]
+insert1 :: PlayerDTO -> Statement (Query (Expr Int64))
 insert1 p = insert $ Insert
             { into = playerSchema
-            , rows = values [ Player (lit p.gameId) (lit p.playerId) ]
-            , returning = Projection (.gameId)
+            , rows = values [ Player (lit p.playerId) (lit p.gameId) ]
+            , returning = Returning toPlayerId
             , onConflict = Abort
             }
 
@@ -80,3 +77,6 @@ toPlayerDTO player = PlayerDTO
     { gameId = player.gameId
     , playerId = player.playerId
     }
+
+toPlayerId :: Player Expr -> Expr Int64
+toPlayerId player = player.gameId
